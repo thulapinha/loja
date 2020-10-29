@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "590782502339",
+    "firebase_url": "https://loja-c125f.firebaseio.com",
+    "project_id": "loja-c125f",
+    "storage_bucket": "loja-c125f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:590782502339:android:6fbe49d12f56878bb45976",
+        "android_client_info": {
+          "package_name": "loja.thulapinha.com.lojaronilson"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "590782502339-qagas0h3t7rn7sqbrra1q76n4qsep48t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkJjoWoTge5hdTnslpm36Sgw653-OC6NE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "590782502339-qagas0h3t7rn7sqbrra1q76n4qsep48t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
