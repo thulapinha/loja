@@ -1,7 +1,7 @@
 import 'package:credit_card_type_detector/credit_card_type_detector.dart';
 
 class CreditCard {
-//teste
+
   String number;
   String holder;
   String expirationDate;
