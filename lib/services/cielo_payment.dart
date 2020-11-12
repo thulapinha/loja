@@ -2,6 +2,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:lojaronilson/models/credit_card.dart';
 import 'package:lojaronilson/models/user.dart';
+
+// ignore: directives_ordering
 import 'dart:collection';
 
 class CieloPayment {
@@ -38,5 +40,43 @@ class CieloPayment {
       return Future.error('Falha ao processar transação. Tente novamente.');
     }
   }
+  Future<void> capture(String payId) async {
+    final Map<String, dynamic> captureData = {
+      'payId': payId
+    };
+    final HttpsCallable callable = functions.getHttpsCallable(
+        functionName: 'captureCreditCard'
+    );
+    final response = await callable.call(captureData);
+    final data = Map<String, dynamic>.from(response.data as LinkedHashMap);
+
+    if (data['success'] as bool) {
+      debugPrint('Captura realizada com sucesso');
+    } else {
+      debugPrint('${data['error']['message']}');
+      return Future.error(data['error']['message']);
+    }
+  }
+
+  Future<void> cancel(String payId) async {
+    final Map<String, dynamic> cancelData = {
+      'payId': payId
+    };
+    final HttpsCallable callable = functions.getHttpsCallable(
+        functionName: 'cancelCreditCard'
+    );
+    final response = await callable.call(cancelData);
+    final data = Map<String, dynamic>.from(response.data as LinkedHashMap);
+
+    if (data['success'] as bool) {
+      debugPrint('Cancelamento realizado com sucesso');
+    } else {
+      debugPrint('${data['error']['message']}');
+      return Future.error(data['error']['message']);
+    }
+  }
+
+
+
 
 }
