@@ -17,7 +17,8 @@ class CieloPayment {
       final Map<String, dynamic> dataSale = {
         'merchantOrderId': orderId,
         'amount': (price * 100).toInt(),
-        'softDescriptor': 'Loja Daniel',
+        //'amount': 10 * 100,
+        'softDescriptor': 'Loja RBC',
         'installments': 1,
         'creditCard': creditCard.toJson(),
         'cpf': user.cpf,
@@ -27,6 +28,7 @@ class CieloPayment {
       final HttpsCallable callable = functions.getHttpsCallable(
           functionName: 'authorizeCreditCard'
       );
+      callable.timeout = const Duration(seconds: 60);
       final response = await callable.call(dataSale);
       final data = Map<String, dynamic>.from(response.data as LinkedHashMap);
       if (data['success'] as bool) {
@@ -40,6 +42,7 @@ class CieloPayment {
       return Future.error('Falha ao processar transação. Tente novamente.');
     }
   }
+
   Future<void> capture(String payId) async {
     final Map<String, dynamic> captureData = {
       'payId': payId
@@ -47,6 +50,7 @@ class CieloPayment {
     final HttpsCallable callable = functions.getHttpsCallable(
         functionName: 'captureCreditCard'
     );
+    callable.timeout = const Duration(seconds: 60);
     final response = await callable.call(captureData);
     final data = Map<String, dynamic>.from(response.data as LinkedHashMap);
 
@@ -65,6 +69,7 @@ class CieloPayment {
     final HttpsCallable callable = functions.getHttpsCallable(
         functionName: 'cancelCreditCard'
     );
+    callable.timeout = const Duration(seconds: 60);
     final response = await callable.call(cancelData);
     final data = Map<String, dynamic>.from(response.data as LinkedHashMap);
 
@@ -75,8 +80,5 @@ class CieloPayment {
       return Future.error(data['error']['message']);
     }
   }
-
-
-
 
 }
