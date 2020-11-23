@@ -34,7 +34,7 @@ class UserManager extends ChangeNotifier {
       final AuthResult result = await auth.signInWithEmailAndPassword(
           email: user.email, password: user.password);
 
-      await _loadCurrentUser(firebaseUser: result.user);
+
 
       onSuccess();
     } on PlatformException catch (e){
@@ -43,7 +43,7 @@ class UserManager extends ChangeNotifier {
     loading = false;
   }
 
- Future<void> facebookLogin({Function onFail, Function onSuccess}) async {
+  Future<void> facebookLogin({Function onFail, Function onSuccess}) async {
     loading = true;
 
     final result = await FacebookLogin().logIn(['email', 'public_profile']);
@@ -66,6 +66,8 @@ class UserManager extends ChangeNotifier {
           );
 
           await user.saveData();
+          user.saveToken();
+          users.saveToken();
 
           onSuccess();
         }
@@ -81,7 +83,7 @@ class UserManager extends ChangeNotifier {
   }
   // Google login
   // ignore: missing_return
- Future<void> googleSignIn({Null Function() onFail, Null Function() onSuccess}) async {
+  Future<void> googleSignIn({Null Function() onFail, Null Function() onSuccess}) async {
     final GoogleSignInAccount googleSignInAccount = await gooleSignIn.signIn();
 
     if (googleSignInAccount != null) {
@@ -99,7 +101,7 @@ class UserManager extends ChangeNotifier {
 
         final firebaseUser = authResult.user;
 
-       users = User(
+        users = User(
             id: firebaseUser.uid,
             name: firebaseUser.displayName,
             email: firebaseUser.email
@@ -145,6 +147,9 @@ class UserManager extends ChangeNotifier {
 
       await user.saveData();
 
+      user.saveToken();
+      users.saveToken();
+
       onSuccess();
     } on PlatformException catch (e){
       onFail(getErrorString(e.code));
@@ -169,6 +174,9 @@ class UserManager extends ChangeNotifier {
       final DocumentSnapshot docUser = await firestore.collection('users')
           .document(currentUser.uid).get();
       user = User.fromDocument(docUser);
+
+      user.saveToken();
+      users.saveToken();
 
       final docAdmin = await firestore.collection('admins').document(user.id).get();
       if(docAdmin.exists){

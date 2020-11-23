@@ -4,8 +4,12 @@ import 'package:lojaronilson/helpers/validators.dart';
 import 'package:lojaronilson/models/user.dart';
 import 'package:lojaronilson/models/user_manager.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/cupertino.dart';
 
 class LoginScreen extends StatelessWidget {
+
+
+  User user, users;
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passController = TextEditingController();
@@ -110,7 +114,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    /*SignInButton(
+                    SignInButton(
                       Buttons.Facebook,
                       text: 'Entrar com Facebook',
                       onPressed: (){
@@ -128,7 +132,7 @@ class LoginScreen extends StatelessWidget {
                             }
                         );
                       },
-                    ),*/
+                    ),
                     SignInButton(
                       Buttons.Google,
                       text: 'Entrar com Google',
@@ -156,6 +160,25 @@ class LoginScreen extends StatelessWidget {
                 child: FlatButton(
                   onPressed: (){
 
+                    if(emailController.text.isEmpty)
+                      scaffoldKey.currentState.showSnackBar(
+                          SnackBar(
+                            content: Text('Insira seu E-mail para Recuperação'),
+                            backgroundColor: Colors.red,
+                            duration: Duration(seconds: 5),
+                          )
+                      );
+                    else {
+
+                      scaffoldKey.currentState.showSnackBar(
+
+                          SnackBar(
+                            content: Text('Confira seu E-mail'),
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 5),
+                          )
+                      );
+                    }
                   },
                   padding: EdgeInsets.zero,
                   child: const Text(
@@ -169,4 +192,5 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
+
 }

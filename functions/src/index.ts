@@ -3,15 +3,13 @@ import * as admin from 'firebase-admin';
 
 import { CieloConstructor, Cielo, TransactionCreditCardRequestModel, EnumBrands, CaptureRequestModel, CancelTransactionRequestModel} from 'cielo';
 
-//, CaptureRequestModel, CancelTransactionRequestModel, TransactionCreditCardResponseModel
-
 admin.initializeApp(functions.config().firebase);
 
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-const merchantId = functions.config().cielo.merchantId;
-const merchantKey = functions.config().cielo.merchantKey;
+const merchantId = functions.config().cielo.merchantid;
+const merchantKey = functions.config().cielo.merchantkey;
 
 const cieloParams: CieloConstructor = {
     merchantId: merchantId,
@@ -108,8 +106,8 @@ export const authorizeCreditCard = functions.https.onCall(async (data, context) 
             currency: 'BRL',
             country: 'BRA',
             amount: data.amount,
-            installments: data.installment,
-            softDescriptor: data.softDescriptor,
+            installments: data.installments,
+            softDescriptor: data.softDescriptor.substring(0, 13),
             type: data.paymentType,
             capture: false,
             creditCard: {
@@ -165,6 +163,7 @@ export const authorizeCreditCard = functions.https.onCall(async (data, context) 
             }
         }
     } catch (error){
+        console.log("Error ", error);
         return {
             "success": false,
             "error": {
@@ -175,7 +174,6 @@ export const authorizeCreditCard = functions.https.onCall(async (data, context) 
     }
 
 });
-
 
 export const captureCreditCard = functions.https.onCall(async (data, context) => {
     if(data === null){
@@ -285,7 +283,6 @@ export const cancelCreditCard = functions.https.onCall(async (data, context) => 
 
 
 
-
 export const helloWorld = functions.https.onCall((data, context) => {
   return {data: "Hellow from Cloud Functions!!!"};
 });
@@ -316,7 +313,27 @@ export const addMessage = functions.https.onCall( async (data, context) => {
     return {"success": snapshot.id};
 });
 
-export const onNewOrder = functions.firestore.document("/orders/{orderId}").onCreate((snapshot, context) => {
+export const onNewOrder = functions.firestore.document("/orders/{orderId}").onCreate(async (snapshot, context) => {
     const orderId = context.params.orderId;
-    console.log(orderId);
+
+    const querySnapshot = await admin.firestore().collection("admins").get();
+
+    const admins = querySnapshot.docs.map(doc => doc.id);
+
+    let adminsTokens: string[] = [];
+    for(let i = 0; i < admins.length; i++){
+        const tokensAdmin: string[] = await getDeviceTokens(admins[i]);
+        adminsTokens = adminsTokens.concat(tokensAdmin);
+    }
+
+    console.log(orderId, adminsTokens);
+
 });
+
+async function getDeviceTokens(uid: string){
+    const querySnapshot = await admin.firestore().collection("users").doc(uid).collection("tokens").get();
+
+    const tokens = querySnapshot.docs.map(doc => doc.id);
+
+    return tokens;
+}
