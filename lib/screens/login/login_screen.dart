@@ -8,9 +8,6 @@ import 'package:flutter/cupertino.dart';
 
 class LoginScreen extends StatelessWidget {
 
-
-  User user, users;
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passController = TextEditingController();
 
@@ -40,11 +37,21 @@ class LoginScreen extends StatelessWidget {
       body: Center(
         child: Card(
           margin: const EdgeInsets.symmetric(horizontal: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
           child: Form(
             key: formKey,
             child: Consumer<UserManager>(
               builder: (_, userManager, child){
+                if(userManager.loadingFace){
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation(
+                          Theme.of(context).primaryColor
+                      ),
+                    ),
+                  );
+                }
+
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   shrinkWrap: true,
@@ -81,21 +88,21 @@ class LoginScreen extends StatelessWidget {
                       onPressed: userManager.loading ? null : (){
                         if(formKey.currentState.validate()){
                           userManager.signIn(
-                              user: User(
-                                  email: emailController.text,
-                                  password: passController.text
-                              ),
-                              onFail: (e){
-                                scaffoldKey.currentState.showSnackBar(
-                                    SnackBar(
-                                      content: Text('Falha ao entrar: $e'),
-                                      backgroundColor: Colors.red,
-                                    )
-                                );
-                              },
-                              onSuccess: (){
-                                Navigator.of(context).pop();
-                              }
+                            user: User(
+                                email: emailController.text,
+                                password: passController.text
+                            ),
+                            onFail: (e){
+                              scaffoldKey.currentState.showSnackBar(
+                                  SnackBar(
+                                    content: Text('Falha ao entrar: $e'),
+                                    backgroundColor: Colors.red,
+                                  )
+                              );
+                            },
+                            onSuccess: (){
+                              Navigator.of(context).pop();
+                            }
                           );
                         }
                       },
@@ -119,39 +126,20 @@ class LoginScreen extends StatelessWidget {
                       text: 'Entrar com Facebook',
                       onPressed: (){
                         userManager.facebookLogin(
-                            onFail: (e){
-                              scaffoldKey.currentState.showSnackBar(
-                                  SnackBar(
-                                    content: Text('Falha ao entrar: $e'),
-                                    backgroundColor: Colors.red,
-                                  )
-                              );
-                            },
-                            onSuccess: (){
-                              Navigator.of(context).pop();
-                            }
+                          onFail: (e){
+                            scaffoldKey.currentState.showSnackBar(
+                                SnackBar(
+                                  content: Text('Falha ao entrar: $e'),
+                                  backgroundColor: Colors.red,
+                                )
+                            );
+                          },
+                          onSuccess: (){
+                            Navigator.of(context).pop();
+                          }
                         );
                       },
-                    ),
-                    SignInButton(
-                      Buttons.Google,
-                      text: 'Entrar com Google',
-                      onPressed: (){
-                        userManager.googleSignIn(
-                            onFail: (){
-                              scaffoldKey.currentState.showSnackBar(
-                                  SnackBar(
-                                    content: Text('Falha ao entrar'),
-                                    backgroundColor: Colors.red,
-                                  )
-                              );
-                            },
-                            onSuccess: (){
-                              Navigator.of(context).pop();
-                            }
-                        );
-                      },
-                    ),
+                    )
                   ],
                 );
               },
@@ -160,25 +148,6 @@ class LoginScreen extends StatelessWidget {
                 child: FlatButton(
                   onPressed: (){
 
-                    if(emailController.text.isEmpty)
-                      scaffoldKey.currentState.showSnackBar(
-                          SnackBar(
-                            content: Text('Insira seu E-mail para Recuperação'),
-                            backgroundColor: Colors.red,
-                            duration: Duration(seconds: 5),
-                          )
-                      );
-                    else {
-
-                      scaffoldKey.currentState.showSnackBar(
-
-                          SnackBar(
-                            content: Text('Confira seu E-mail'),
-                            backgroundColor: Colors.green,
-                            duration: Duration(seconds: 5),
-                          )
-                      );
-                    }
                   },
                   padding: EdgeInsets.zero,
                   child: const Text(
@@ -192,5 +161,4 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-
 }
