@@ -9,24 +9,30 @@ import 'package:lojaronilson/models/user.dart';
 
 class UserManager extends ChangeNotifier {
 
-
-
   UserManager(){
     _loadCurrentUser();
   }
 
   final FirebaseAuth auth = FirebaseAuth.instance;
   final Firestore firestore = Firestore.instance;
-  final gooleSignIn = GoogleSignIn();
 
-  User user, users;
-
+  User user;
 
   bool _loading = false;
   bool get loading => _loading;
+  set loading(bool value){
+    _loading = value;
+    notifyListeners();
+  }
 
-  bool get isLoggedIn => user  != null;
+  bool _loadingFace = false;
+  bool get loadingFace => _loadingFace;
+  set loadingFace(bool value){
+    _loadingFace = value;
+    notifyListeners();
+  }
 
+  bool get isLoggedIn => user != null;
 
   Future<void> signIn({User user, Function onFail, Function onSuccess}) async {
     loading = true;
@@ -34,7 +40,7 @@ class UserManager extends ChangeNotifier {
       final AuthResult result = await auth.signInWithEmailAndPassword(
           email: user.email, password: user.password);
 
-
+      await _loadCurrentUser(firebaseUser: result.user);
 
       onSuccess();
     } on PlatformException catch (e){
@@ -44,14 +50,14 @@ class UserManager extends ChangeNotifier {
   }
 
   Future<void> facebookLogin({Function onFail, Function onSuccess}) async {
-    loading = true;
+    loadingFace = true;
 
     final result = await FacebookLogin().logIn(['email', 'public_profile']);
 
     switch(result.status){
       case FacebookLoginStatus.loggedIn:
         final credential = FacebookAuthProvider.getCredential(
-            accessToken: result.accessToken.token
+          accessToken: result.accessToken.token
         );
 
         final authResult = await auth.signInWithCredential(credential);
@@ -60,14 +66,14 @@ class UserManager extends ChangeNotifier {
           final firebaseUser = authResult.user;
 
           user = User(
-              id: firebaseUser.uid,
-              name: firebaseUser.displayName,
-              email: firebaseUser.email
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName,
+            email: firebaseUser.email
           );
 
           await user.saveData();
+
           user.saveToken();
-          users.saveToken();
 
           onSuccess();
         }
@@ -79,63 +85,9 @@ class UserManager extends ChangeNotifier {
         break;
     }
 
-    loading = false;
-  }
-  // Google login
-  // ignore: missing_return
-  Future<void> googleSignIn({Null Function() onFail, Null Function() onSuccess}) async {
-    final GoogleSignInAccount googleSignInAccount = await gooleSignIn.signIn();
-
-    if (googleSignInAccount != null) {
-      final GoogleSignInAuthentication googleSignInAuthentication =
-      await googleSignInAccount.authentication;
-
-      final AuthCredential credential = GoogleAuthProvider.getCredential(
-          idToken: googleSignInAuthentication.idToken,
-          accessToken: googleSignInAuthentication.accessToken);
-
-      final AuthResult authResult = await auth.signInWithCredential(credential);
-
-
-      if(authResult.user != null){
-
-        final firebaseUser = authResult.user;
-
-        users = User(
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName,
-            email: firebaseUser.email
-        );
-
-        await users.saveData();
-
-        onSuccess();
-      }
-      final FirebaseUser user = await auth.currentUser();
-      // ignore: avoid_print
-      print(user.uid);
-
-      // ignore: void_checks
-      return Future.value(true);
-    }
-    loading = false;
-
-  }
-  Future<void> signOutUser() async {
-    FirebaseUser user = await auth.currentUser();
-
-    // ignore: avoid_print
-    print(user.providerData[1].providerId);
-    if (user.providerData[1].providerId == 'google.com') {
-      await gooleSignIn.disconnect();
-    }
-
-    await auth.signOut();
-    // ignore: void_checks
-    return Future.value(true);
+    loadingFace = false;
   }
 
-//fim
   Future<void> signUp({User user, Function onFail, Function onSuccess}) async {
     loading = true;
     try {
@@ -148,7 +100,6 @@ class UserManager extends ChangeNotifier {
       await user.saveData();
 
       user.saveToken();
-      users.saveToken();
 
       onSuccess();
     } on PlatformException catch (e){
@@ -163,11 +114,6 @@ class UserManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  set loading(bool value){
-    _loading = value;
-    notifyListeners();
-  }
-
   Future<void> _loadCurrentUser({FirebaseUser firebaseUser}) async {
     final FirebaseUser currentUser = firebaseUser ?? await auth.currentUser();
     if(currentUser != null){
@@ -176,7 +122,6 @@ class UserManager extends ChangeNotifier {
       user = User.fromDocument(docUser);
 
       user.saveToken();
-      users.saveToken();
 
       final docAdmin = await firestore.collection('admins').document(user.id).get();
       if(docAdmin.exists){
