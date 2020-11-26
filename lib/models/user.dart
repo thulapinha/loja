@@ -33,10 +33,10 @@ class User {
   Address address;
 
   DocumentReference get firestoreRef =>
-      Firestore.instance.document('users/$id');
+    Firestore.instance.document('users/$id');
 
   CollectionReference get cartReference =>
-      firestoreRef.collection('cart');
+    firestoreRef.collection('cart');
 
   CollectionReference get tokensReference =>
       firestoreRef.collection('tokens');
